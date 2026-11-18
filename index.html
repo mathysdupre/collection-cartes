@@ -167,24 +167,29 @@ function parseJ(t){var m=String(t||"").match(/\{[\s\S]*\}/);return m?JSON.parse(
 /* --- INTEGRATION GEMINI API --- */
 function getApiKey() { return localStorage.getItem(API_KEY_KEY) || ""; }
 async function callGemini(promptText, base64Image) {
-  var key = getApiKey();
-  if (!key) throw {code:"no_key", message: "Clé API Gemini manquante. Allez dans Réglages."};
-  var url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=" + key;
-  var parts = [{text: promptText}];
-  if (base64Image) {
-    var mimeType = base64Image.split(";")[0].split(":")[1];
-    var data = base64Image.split(",")[1];
-    parts.push({inline_data: { mime_type: mimeType, data: data }});
-  }
-  var res;
-for(var a=0; a<4; a++){ res = await fetch(url, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ contents: [{ parts: parts }] }) }); if(res.status !== 503) break; await new Promise(function(r){setTimeout(r, 1500);}); }
-if (!res.ok) throw {code:"api_error", message: "Erreur API ou clé invalide."};
-  });
-  if (!res.ok) throw {code:"api_error", message: "Erreur API ou clé invalide."};
-  var json = await res.json();
-  return json.candidates[0].content.parts[0].text;
+var key = getApiKey();
+if (!key) throw {code:"no_key", message: "Clé API Gemini manquante. Allez dans Réglages."};
+var url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=" + key;
+var parts = [{text: promptText}];
+if (base64Image) {
+var mimeType = base64Image.split(";")[0].split(":")[1];
+var data = base64Image.split(",")[1];
+parts.push({inline_data: { mime_type: mimeType, data: data }});
 }
-
+var res;
+for (var a = 0; a < 4; a++) {
+res = await fetch(url, {
+method: "POST",
+headers: {"Content-Type": "application/json"},
+body: JSON.stringify({ contents: [{ parts: parts }] })
+});
+if (res.status !== 503) break;
+await new Promise(function(r){ setTimeout(r, 1500); });
+}
+if (!res.ok) throw {code:"api_error", message: "Erreur API ou clé invalide."};
+var json = await res.json();
+return json.candidates[0].content.parts[0].text;
+}
 var PK="cartes-prix-v2",TTL=30*864e5;
 function ckey(c){return [c.joueur,c.sport,c.annee,c.serie,c.numero,c.etat].map(function(x){return String(x||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g," ").trim();}).join("|");}
 function pcache(){try{return JSON.parse(localStorage.getItem(PK)||"{}")||{};}catch(e){return {};}}
