@@ -175,10 +175,14 @@ var mimeType = base64Image.split(";")[0].split(":")[1];
 var data = base64Image.split(",")[1];
 parts.push({inline_data: { mime_type: mimeType, data: data }});
 }
-var models = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash-lite", "gemini-3.6-pro", "gemini-3.6-flash"];
+var listRes = await fetch("https://generativelanguage.googleapis.com/v1beta/models?key=" + key);
+var listJson = await listRes.json();
+var validModels = (listJson.models || []).filter(function(m) {
+return m.supportedGenerationMethods && m.supportedGenerationMethods.indexOf("generateContent") >= 0;
+});
 var res;
-for (var i = 0; i < models.length; i++) {
-var url = "https://generativelanguage.googleapis.com/v1beta/models/" + models[i] + ":generateContent?key=" + key;
+for (var i = 0; i < validModels.length; i++) {
+var url = "https://generativelanguage.googleapis.com/v1beta/" + validModels[i].name + ":generateContent?key=" + key;
 res = await fetch(url, {
 method: "POST",
 headers: {"Content-Type": "application/json"},
@@ -186,7 +190,7 @@ body: JSON.stringify({ contents: [{ parts: parts }] })
 });
 if (res.ok) break;
 }
-if (!res || !res.ok) throw {code:"api_error", message: "Tous les serveurs Google sont occupés, réessayez."};
+if (!res || !res.ok) throw {code:"api_error", message: "Serveur occupé ou clé non valide."};
 var json = await res.json();
 return json.candidates[0].content.parts[0].text;
 }
