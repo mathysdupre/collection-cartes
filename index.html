@@ -176,10 +176,9 @@ async function callGemini(promptText, base64Image) {
     var data = base64Image.split(",")[1];
     parts.push({inline_data: { mime_type: mimeType, data: data }});
   }
-  var res = await fetch(url, {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({ contents: [{ parts: parts }] })
+  var res;
+for(var a=0; a<4; a++){ res = await fetch(url, { method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({ contents: [{ parts: parts }] }) }); if(res.status !== 503) break; await new Promise(function(r){setTimeout(r, 1500);}); }
+if (!res.ok) throw {code:"api_error", message: "Erreur API ou clé invalide."};
   });
   if (!res.ok) throw {code:"api_error", message: "Erreur API ou clé invalide."};
   var json = await res.json();
