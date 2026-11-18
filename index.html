@@ -169,24 +169,24 @@ function getApiKey() { return localStorage.getItem(API_KEY_KEY) || ""; }
 async function callGemini(promptText, base64Image) {
 var key = getApiKey();
 if (!key) throw {code:"no_key", message: "Clé API Gemini manquante. Allez dans Réglages."};
-var url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=" + key;
 var parts = [{text: promptText}];
 if (base64Image) {
 var mimeType = base64Image.split(";")[0].split(":")[1];
 var data = base64Image.split(",")[1];
 parts.push({inline_data: { mime_type: mimeType, data: data }});
 }
+var models = ["gemini-2.5-flash", "gemini-2.5-pro", "gemini-2.0-flash-lite", "gemini-3.6-pro", "gemini-3.6-flash"];
 var res;
-for (var a = 0; a < 4; a++) {
+for (var i = 0; i < models.length; i++) {
+var url = "https://generativelanguage.googleapis.com/v1beta/models/" + models[i] + ":generateContent?key=" + key;
 res = await fetch(url, {
 method: "POST",
 headers: {"Content-Type": "application/json"},
 body: JSON.stringify({ contents: [{ parts: parts }] })
 });
-if (res.status !== 503) break;
-await new Promise(function(r){ setTimeout(r, 1500); });
+if (res.ok) break;
 }
-if (!res.ok) throw {code:"api_error", message: "Erreur API ou clé invalide."};
+if (!res || !res.ok) throw {code:"api_error", message: "Tous les serveurs Google sont occupés, réessayez."};
 var json = await res.json();
 return json.candidates[0].content.parts[0].text;
 }
