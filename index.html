@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ma collection de cartes de sport</title>
+<style>
+:root{--bg:#f5f3ee;--card:#fff;--tx:#16181d;--mut:#6c6f76;--bd:#e4e1d8;--ac:#1f5f4a;--onac:#fff;--sh:0 1px 2px rgba(0,0,0,.06),0 8px 24px rgba(0,0,0,.06);box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#101214;--card:#1a1d21;--tx:#eceae4;--mut:#9a9da4;--bd:#2c3036;--ac:#4cc29a;--onac:#06251c;--sh:none;color-scheme:dark}}
+*{box-sizing:border-box}[hidden]{display:none!important}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:15px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:1040px;margin:0 auto;padding:16px 16px 56px}
+.hero{background:linear-gradient(135deg,#1f5f4a,#0f2f26);color:#fff;border-radius:18px;padding:22px;display:flex;flex-wrap:wrap;gap:16px;align-items:center;justify-content:space-between;box-shadow:var(--sh)}
+h1{margin:0;font-size:28px;letter-spacing:-.02em}.hero p{margin:2px 0 0;opacity:.75}
+.stats{display:flex;gap:8px;flex-wrap:wrap;width:100%}
+.stat{background:rgba(255,255,255,.12);border-radius:12px;padding:8px 14px;flex:1;min-width:100px}.stat b{font-size:20px;display:block}.stat span{font-size:12px;opacity:.8}
+button{font:inherit;cursor:pointer;border:0;border-radius:10px;padding:10px 16px;font-weight:600;background:var(--ac);color:var(--onac)}
+button:disabled{opacity:.5;cursor:default}
+.gold{background:#e0b04a;color:#1b1400}
+.sec{background:transparent;color:var(--tx);border:1px solid var(--bd)}
+.panel{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:16px;margin:16px 0;box-shadow:var(--sh)}
+.ai{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding-bottom:12px;margin-bottom:12px;border-bottom:1px dashed var(--bd)}
+.ai2{display:contents}
+.ai label{flex-direction:row;align-items:center;gap:6px;font-size:13px;color:var(--tx)}
+#prev{height:64px;border-radius:6px;border:1px solid var(--bd)}
+form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+label{font-size:12px;color:var(--mut);display:flex;flex-direction:column;gap:4px}
+input,select,textarea{font:inherit;color:var(--tx);background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:9px}
+.wide{grid-column:1/-1}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:4px 0 10px}
+.chip{white-space:nowrap;background:var(--card);color:var(--tx);border:1px solid var(--bd);border-radius:99px;padding:6px 14px;font-weight:500}
+.chip.on{background:var(--ac);color:var(--onac);border-color:var(--ac)}
+.bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}.bar input,.bar select{flex:1;min-width:140px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
+.c{background:var(--card);border:1px solid var(--bd);border-radius:16px;overflow:hidden;display:flex;flex-direction:column;box-shadow:var(--sh)}
+.ph{position:relative;aspect-ratio:5/7;background:linear-gradient(160deg,var(--bd),var(--bg));display:grid;place-items:center}
+.ph img{width:100%;height:100%;object-fit:cover;cursor:zoom-in}
+.emo{font-size:56px}
+.badge,.val{position:absolute;font-size:12px;font-weight:700;border-radius:99px;padding:3px 10px}
+.badge{top:8px;left:8px;background:rgba(0,0,0,.65);color:#fff}
+.val{bottom:8px;right:8px;background:#e0b04a;color:#1b1400}
+.bd{padding:12px;display:flex;flex-direction:column;gap:3px;flex:1}
+.bd h3{margin:0;font-size:16px}.m{color:var(--mut);font-size:13px}.n{font-size:13px}
+.act{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto;padding-top:8px}
+.ghost{display:inline-block;background:transparent;color:var(--mut);border:1px solid var(--bd);padding:5px 10px;font-weight:500;font-size:12px;text-decoration:none;border-radius:8px;text-align:center;cursor:pointer}
+.danger{color:#fff;background:#c0392b;border-color:#c0392b}
+.empty{text-align:center;color:var(--mut);padding:48px 0}
+#lb{position:fixed;inset:0;background:rgba(0,0,0,.85);display:grid;place-items:center;z-index:20;padding:16px;cursor:zoom-out}#lb img{max-width:100%;max-height:100%;border-radius:12px}
+#toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:#222;color:#fff;padding:10px 16px;border-radius:10px;z-index:30;max-width:90%;transition:opacity 0.3s}
+button,.chip,.c,.ghost{transition:transform .15s ease,box-shadow .2s ease,background-color .2s ease,color .2s ease,border-color .2s ease,opacity .2s}
+button:not(:disabled):hover{transform:translateY(-1px)}
+button:not(:disabled):active{transform:scale(.96)}
+.chip:hover{border-color:var(--ac)}
+.c:hover{transform:translateY(-4px);box-shadow:0 12px 30px rgba(0,0,0,.15)}
+:root{--glass:rgba(255,255,255,.58);--glass2:rgba(255,255,255,.65);--gbd:rgba(255,255,255,.7)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--glass:rgba(32,36,42,.55);--glass2:rgba(255,255,255,.07);--gbd:rgba(255,255,255,.14)}}
+.glass{position:relative;border:1px solid var(--gbd);box-shadow:var(--sh),inset 0 1px 0 rgba(255,255,255,.45)}
+.c.glass,.panel.glass{background:var(--glass);-webkit-backdrop-filter:blur(22px) saturate(180%);backdrop-filter:blur(22px) saturate(180%)}
+.hero.glass{border-color:rgba(255,255,255,.25)}
+.stat{-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.2)}
+input,select,textarea{background:var(--glass2);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border-color:var(--gbd)}
+.header-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+<main>
+<header class="hero glass">
+<div><h1>Ma collection</h1><p>Cartes de sport</p></div>
+<div class="header-actions">
+  <button class="ghost" style="color:white;border-color:rgba(255,255,255,0.3)" id="settingsBtn" type="button">⚙️ Réglages</button>
+  <button class="gold" id="addBtn" type="button">＋ Ajouter</button>
+</div>
+<div class="stats">
+<div class="stat"><b id="sN">0</b><span>cartes</span></div>
+<div class="stat"><b id="sV">0 €</b><span>valeur</span></div>
+<div class="stat"><b id="sC">0</b><span>collections</span></div>
+</div>
+</header>
+
+<!-- Panneau Réglages -->
+<section id="settingsPanel" class="panel glass" hidden>
+  <h3 style="margin-top:0">Paramètres et Sauvegarde</h3>
+  <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom: 16px;">
+    <button class="sec" id="exportBtn" type="button">💾 Exporter les données (JSON)</button>
+    <button class="sec" id="importBtn" type="button">📂 Importer des données</button>
+    <input type="file" id="importIn" accept=".json" hidden>
+  </div>
+  <label class="wide">Clé API Gemini (Requise pour le scan et l'estimation IA)
+    <input id="apiKeyIn" type="password" placeholder="AIzaSy...">
+  </label>
+  <div class="wide" style="margin-top:10px">
+    <button type="button" id="saveSettingsBtn">Enregistrer les réglages</button>
+    <p class="m" style="margin-top:8px">Obtenez une clé API gratuite sur <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--tx)">Google AI Studio</a>.</p>
+  </div>
+</section>
+
+<!-- Panneau Ajout -->
+<section id="panel" class="panel glass" hidden>
+<div class="ai">
+<button type="button" class="sec" id="photoBtn">🖼️ Photo manuelle</button>
+<span id="aiBox" class="ai2">
+<button type="button" class="gold" id="scanBtn">📷 Scanner avec l'IA</button>
+<button type="button" class="sec" id="estBtn">💶 Estimer via l'IA</button>
+<label><input type="checkbox" id="autoEst" checked> Estimer après scan</label>
+<label><input type="checkbox" id="autoAdd"> Ajout auto</label>
+</span>
+<img id="prev" alt="Aperçu" hidden>
+<span id="scanMsg" class="m"></span>
+<input id="scanIn" type="file" accept="image/*" hidden>
+</div>
+<form id="f">
+<label>Joueur / sujet<input name="joueur" required></label>
+<label>Collection<input name="collection" list="cols" placeholder="Ex. NBA 2024"></label>
+<label>Sport<select name="sport"><option>Football</option><option>Basket</option><option>Baseball</option><option>Hockey</option><option>Rugby</option><option>Tennis</option><option>Formule 1</option><option>Autre</option></select></label>
+<label>Année<input name="annee" type="number" min="1850" max="2100" placeholder="2024"></label>
+<label>Marque / série<input name="serie" placeholder="Panini, Topps…"></label>
+<label>Numéro<input name="numero" placeholder="#12"></label>
+<label>État<select name="etat"><option>Neuve</option><option>Excellent</option><option>Bon</option><option>Moyen</option><option>Abîmée</option></select></label>
+<label>Valeur (€)<input name="valeur" type="number" min="0" step="0.5"></label>
+<label class="wide">Notes<textarea name="notes" rows="2"></textarea></label>
+<div class="wide"><button type="submit">Ajouter la carte</button></div>
+</form>
+<datalist id="cols"></datalist>
+</section>
+
+<div class="bar" style="margin-top: 20px;">
+<input id="q" type="search" placeholder="Rechercher…">
+<select id="fs"></select>
+<select id="so">
+<option value="recent">Dernières ajoutées</option>
+<option value="joueur">Joueur (A→Z)</option>
+<option value="annee">Année (récente d’abord)</option>
+<option value="valeur">Valeur (haute d’abord)</option>
+</select>
+</div>
+<div id="chips" class="chips"></div>
+<div id="g" class="grid"></div>
+<p id="e" class="empty" hidden></p>
+</main>
+<div id="lb" hidden><img id="lbi" alt=""></div>
+<div id="toast" hidden></div>
+
+<script>
+(function(){
+var KEY="cartes-sport-v2", cards=[], col="", photo="", mode="scan", formEst=false, formNote="", tt;
+var API_KEY_KEY = "cartes-api-key";
+var EMO={"Football":"⚽","Basket":"🏀","Baseball":"⚾","Hockey":"🏒","Rugby":"🏉","Tennis":"🎾","Formule 1":"🏎️","Autre":"🏅"};
+
+try{cards=JSON.parse(localStorage.getItem(KEY)||"[]")||[];}catch(e){cards=[];}
+var $ = function(i){return document.getElementById(i)};
+function el(t,c,x){var n=document.createElement(t);if(c)n.className=c;if(x!=null)n.textContent=x;return n;}
+function toast(m){var t=$("toast");t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(function(){t.hidden=true;},4500);}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(cards));return true;}catch(e){toast("Stockage plein.");return false;}}
+
+function persist(c){
+  var i=cards.findIndex(function(x){return x.id===c.id;});
+  if(i<0)cards.push(c);else cards[i]=c;
+  save(); render();
+}
+function removeCard(id){
+  cards=cards.filter(function(x){return x.id!==id;});
+  save(); render();
+}
+function parseJ(t){var m=String(t||"").match(/\{[\s\S]*\}/);return m?JSON.parse(m[0]):{};}
+
+/* --- INTEGRATION GEMINI API --- */
+function getApiKey() { return localStorage.getItem(API_KEY_KEY) || ""; }
+async function callGemini(promptText, base64Image) {
+  var key = getApiKey();
+  if (!key) throw {code:"no_key", message: "Clé API Gemini manquante. Allez dans Réglages."};
+  var url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + key;
+  var parts = [{text: promptText}];
+  if (base64Image) {
+    var mimeType = base64Image.split(";")[0].split(":")[1];
+    var data = base64Image.split(",")[1];
+    parts.push({inline_data: { mime_type: mimeType, data: data }});
+  }
+  var res = await fetch(url, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ contents: [{ parts: parts }] })
+  });
+  if (!res.ok) throw {code:"api_error", message: "Erreur API ou clé invalide."};
+  var json = await res.json();
+  return json.candidates[0].content.parts[0].text;
+}
+
+var PK="cartes-prix-v2",TTL=30*864e5;
+function ckey(c){return [c.joueur,c.sport,c.annee,c.serie,c.numero,c.etat].map(function(x){return String(x||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g," ").trim();}).join("|");}
+function pcache(){try{return JSON.parse(localStorage.getItem(PK)||"{}")||{};}catch(e){return {};}}
+
+async function estimate(c, ph){
+  var k=ckey(c), pc=pcache(), h=pc[k];
+  if(h && Date.now()-h.t<TTL) return h;
+  var desc = [c.joueur,c.sport,c.annee,c.serie,c.numero&&("n° "+c.numero),c.etat&&("état : "+c.etat),c.notes].filter(Boolean).join(", ");
+  var promptStr = "Estime la valeur de revente en euros de cette carte : "+desc+". Renvoie UNIQUEMENT un objet JSON : {\"min\":nombre,\"max\":nombre,\"note\":\"phrase courte explicative\"}. Arrondis les valeurs.";
+  var out = await callGemini(promptStr, ph);
+  var d = parseJ(out), mn=Math.round(+d.min), mx=Math.round(+d.max);
+  if(!(mn>=0 && mx>=mn)) throw new Error("Format JSON inattendu de l'IA.");
+  var r = {min:mn, max:mx, mid:Math.round((mn+mx)/2), note:d.note||"", t:Date.now()};
+  pc[k]=r; try{localStorage.setItem(PK,JSON.stringify(pc));}catch(e){}
+  return r;
+}
+
+/* --- LOGIQUE INTERFACE --- */
+function render(){
+  var q=$("q").value.trim().toLowerCase(), so=$("so").value, fs=$("fs"), cur=fs.value;
+  var cn={}, sports=[], none=0, total=0;
+  cards.forEach(function(c){
+    if(c.collection) cn[c.collection]=(cn[c.collection]||0)+1; else none++;
+    if(sports.indexOf(c.sport)<0) sports.push(c.sport);
+    total+=(c.valeur||0);
+  });
+  var names=Object.keys(cn).sort();
+  if(col && col!=="__none" && !cn[col]) col="";
+  
+  var ch=$("chips"); ch.innerHTML="";
+  function chip(label,key,n){
+    var b=el("button","chip"+(col===key?" on":""),label+" ("+n+")");
+    b.type="button"; b.onclick=function(){col=key; render();}; ch.appendChild(b);
+  }
+  chip("Toutes","",cards.length);
+  names.forEach(function(n){chip(n,n,cn[n]);});
+  if(none&&names.length) chip("Sans collection","__none",none);
+  
+  $("cols").innerHTML=""; names.forEach(function(n){var o=el("option"); o.value=n; $("cols").appendChild(o);});
+  fs.innerHTML=""; var o0=el("option",null,"Tous les sports"); o0.value=""; fs.appendChild(o0);
+  sports.sort().forEach(function(s){var o=el("option",null,s); o.value=s; fs.appendChild(o);});
+  fs.value = sports.indexOf(cur)>=0 ? cur : "";
+
+  var list=cards.filter(function(c){
+    if(col==="__none"?c.collection:(col&&c.collection!==col)) return false;
+    if(fs.value&&c.sport!==fs.value) return false;
+    return !q||[c.joueur,c.serie,c.notes,c.sport,c.numero,c.collection].join(" ").toLowerCase().indexOf(q)>=0;
+  });
+  list.sort(function(a,b){
+    if(so==="joueur") return a.joueur.localeCompare(b.joueur,"fr");
+    if(so==="annee") return (b.annee||0)-(a.annee||0);
+    if(so==="valeur") return (b.valeur||0)-(a.valeur||0);
+    return b.id-a.id;
+  });
+
+  var g=$("g"); g.innerHTML="";
+  list.forEach(function(c){
+    var d=el("article","c glass"), ph=el("div","ph");
+    if(c.photo){var im=el("img"); im.src=c.photo; im.onclick=function(){$("lbi").src=c.photo;$("lb").hidden=false;}; ph.appendChild(im);}
+    else ph.appendChild(el("span","emo",EMO[c.sport]||"🏅"));
+    if(c.collection) ph.appendChild(el("span","badge",c.collection));
+    if(c.valeur) ph.appendChild(el("span","val",(c.est?"≈ ":"")+c.valeur+" €"));
+    d.appendChild(ph);
+    
+    var b=el("div","bd");
+    b.appendChild(el("h3",null,c.joueur));
+    b.appendChild(el("div","m",[c.sport,c.annee,c.serie,c.numero].filter(Boolean).join(" · ")));
+    if(c.notes) b.appendChild(el("div","n",c.notes));
+    if(c.estNote) b.appendChild(el("div","m","Estimé : "+c.estNote));
+    
+    var act=el("div","act");
+    var eb=el("button","ghost","Estimer IA"); eb.type="button";
+    eb.onclick = async function(){
+      eb.disabled=true; eb.textContent="...";
+      try{var r=await estimate(c, c.photo); c.valeur=r.mid; c.est=true; c.estNote=r.min+"–"+r.max+" €"; persist(c);}
+      catch(e){toast(e.message||"Erreur"); eb.disabled=false; eb.textContent="Estimer IA";}
+    };
+    act.appendChild(eb);
+    
+    var del=el("button","ghost","Supprimer"), t; del.type="button";
+    del.onclick=function(){
+      if(del.dataset.arm){clearTimeout(t); removeCard(c.id);}
+      else{del.dataset.arm="1"; del.classList.add("danger");
+      t=setTimeout(function(){del.dataset.arm=""; del.classList.remove("danger");},3000);}
+    };
+    act.appendChild(del); b.appendChild(act); d.appendChild(b); g.appendChild(d);
+  });
+  
+  $("e").hidden = list.length>0;
+  $("e").textContent = cards.length ? "Aucun résultat." : "Aucune carte. Clique sur Ajouter.";
+  $("sN").textContent = cards.length;
+  $("sV").textContent = Math.round(total) + " €";
+  $("sC").textContent = names.length;
+}
+
+function formCard(){var F=$("f").elements;return {joueur:F.joueur.value.trim(),sport:F.sport.value,annee:parseInt(F.annee.value)||0,serie:F.serie.value.trim(),numero:F.numero.value.trim(),etat:F.etat.value,notes:F.notes.value.trim(),collection:F.collection.value.trim()};}
+async function doFormEst(){var r=await estimate(formCard(),photo); $("f").elements.valeur.value=r.mid; formEst=true; formNote=r.min+"–"+r.max+" € · "+r.note;}
+
+function addFromForm(){
+  var c=formCard(), F=$("f").elements;
+  c.id=Date.now(); c.valeur=parseFloat(F.valeur.value)||0; c.photo=photo;
+  if(formEst && c.valeur){c.est=true; c.estNote=formNote;}
+  persist(c);
+  var keep=c.collection; $("f").reset(); F.collection.value=keep;
+  photo=""; formEst=false; $("prev").hidden=true;
+  $("panel").hidden=true; render(); toast("Carte ajoutée !");
+}
+
+function shrink(file,max){return new Promise(function(res,rej){
+  var u=URL.createObjectURL(file), im=new Image();
+  im.onload=function(){
+    var k=Math.min(1,max/Math.max(im.width,im.height)), cv=document.createElement("canvas");
+    cv.width=Math.round(im.width*k); cv.height=Math.round(im.height*k);
+    cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height); URL.revokeObjectURL(u);
+    res(cv.toDataURL("image/jpeg", 0.75));
+  };
+  im.onerror=function(){rej(new Error("Image invalide"));}; im.src=u;
+});}
+
+/* --- EVENT LISTENERS --- */
+$("addBtn").onclick=function(){$("panel").hidden=!$("panel").hidden; $("settingsPanel").hidden=true;};
+$("settingsBtn").onclick=function(){$("settingsPanel").hidden=!$("settingsPanel").hidden; $("panel").hidden=true; $("apiKeyIn").value = getApiKey();};
+$("scanBtn").onclick=function(){mode="scan"; $("scanIn").click();};
+$("photoBtn").onclick=function(){mode="photo"; $("scanIn").click();};
+$("lb").onclick=function(){$("lb").hidden=true;};
+$("f").addEventListener("submit",function(ev){ev.preventDefault(); addFromForm();});
+
+$("saveSettingsBtn").onclick=function(){
+  localStorage.setItem(API_KEY_KEY, $("apiKeyIn").value.trim());
+  toast("Réglages enregistrés."); $("settingsPanel").hidden=true;
+};
+$("exportBtn").onclick=function(){
+  var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(cards));
+  var a = document.createElement("a"); a.href = dataStr; a.download = "collection_cartes.json"; a.click();
+};
+$("importBtn").onclick=function(){$("importIn").click();};
+$("importIn").addEventListener("change", function(e){
+  var file = e.target.files[0]; if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(evt) {
+    try {
+      var imported = JSON.parse(evt.target.result);
+      if(Array.isArray(imported)) { cards = imported; save(); render(); toast("Collection importée avec succès !"); $("settingsPanel").hidden = true; }
+    } catch(err) { toast("Fichier JSON invalide."); }
+  };
+  reader.readAsText(file); this.value="";
+});
+
+var PROMPT="Analyse cette carte de sport. Renvoie UNIQUEMENT un objet JSON avec ces clés exactes : joueur, sport (Football, Basket, Baseball, Hockey, Rugby, Tennis, Formule 1, Autre), annee (nombre), serie, numero, etat (Neuve, Excellent, Bon, Moyen, Abîmée), notes. Mets une chaîne vide si non lisible.";
+
+$("scanIn").addEventListener("change", async function(){
+  var file=this.files[0]; this.value=""; if(!file) return;
+  var msg=$("scanMsg"), bs=[$("scanBtn"),$("photoBtn"),$("estBtn")];
+  bs.forEach(function(b){b.disabled=true;});
+  try{
+    photo = await shrink(file, 800); $("prev").src=photo; $("prev").hidden=false;
+    if(mode==="photo"){msg.textContent="Photo ajoutée."; return;}
+    msg.textContent="Lecture IA en cours...";
+    
+    var out = await callGemini(PROMPT, photo);
+    var d = parseJ(out), F=$("f").elements;
+    F.joueur.value=d.joueur||""; F.annee.value=d.annee||""; F.serie.value=d.serie||"";
+    F.numero.value=d.numero||""; F.notes.value=d.notes||""; F.valeur.value=""; formEst=false;
+    if(d.sport) F.sport.value=d.sport; if(d.etat) F.etat.value=d.etat;
+    
+    if($("autoEst").checked && F.joueur.value){
+      msg.textContent="Estimation IA en cours...";
+      await doFormEst();
+    }
+    if($("autoAdd").checked && F.joueur.value) addFromForm();
+    else msg.textContent="Carte lue. Vérifiez et validez.";
+  }catch(e){msg.textContent=e.message||"Erreur de scan."; toast(e.message||"Erreur de scan.");}
+  finally{bs.forEach(function(b){b.disabled=false;});}
+});
+
+$("estBtn").onclick=async function(){
+  if(!formCard().joueur){toast("Joueur requis.");return;}
+  $("estBtn").disabled=true; $("scanMsg").textContent="Estimation...";
+  try{await doFormEst(); $("scanMsg").textContent="Valeur estimée.";}
+  catch(e){$("scanMsg").textContent=""; toast(e.message||"Erreur.");}
+  $("estBtn").disabled=false;
+};
+
+["q","fs","so"].forEach(function(i){$(i).addEventListener("input",render);});
+render();
+})();
+</script>
+</body>
+</html>
