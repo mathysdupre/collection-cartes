@@ -169,7 +169,7 @@ function getApiKey() { return localStorage.getItem(API_KEY_KEY) || ""; }
 async function callGemini(promptText, base64Image) {
   var key = getApiKey();
   if (!key) throw {code:"no_key", message: "Clé API Gemini manquante. Allez dans Réglages."};
-  var url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash:generateContent?key=" + key;
+  var url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=" + key;
   var parts = [{text: promptText}];
   if (base64Image) {
     var mimeType = base64Image.split(";")[0].split(":")[1];
