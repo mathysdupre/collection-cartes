@@ -300,7 +300,7 @@ function shrink(file,max){return new Promise(function(res,rej){
     var k=Math.min(1,max/Math.max(im.width,im.height)), cv=document.createElement("canvas");
     cv.width=Math.round(im.width*k); cv.height=Math.round(im.height*k);
     cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height); URL.revokeObjectURL(u);
-    res(cv.toDataURL("image/jpeg", 0.75));
+    res(cv.toDataURL("image/jpeg", 0.5));
   };
   im.onerror=function(){rej(new Error("Image invalide"));}; im.src=u;
 });}
@@ -341,7 +341,7 @@ $("scanIn").addEventListener("change", async function(){
   var msg=$("scanMsg"), bs=[$("scanBtn"),$("photoBtn"),$("estBtn")];
   bs.forEach(function(b){b.disabled=true;});
   try{
-    photo = await shrink(file, 800); $("prev").src=photo; $("prev").hidden=false;
+    photo = await shrink(file, 400); $("prev").src=photo; $("prev").hidden=false;
     if(mode==="photo"){msg.textContent="Photo ajoutée."; return;}
     msg.textContent="Lecture IA en cours...";
     
