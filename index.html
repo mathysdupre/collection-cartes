@@ -87,10 +87,11 @@ input,select,textarea{background:var(--glass2);-webkit-backdrop-filter:blur(10px
     <input type="file" id="importIn" accept=".json" hidden>
   </div>
   <label class="wide">Clé API Gemini (Requise pour le scan et l'estimation IA)
-    <input id="apiKeyIn" type="password" placeholder="AQ.Ab8...">
+    <input id="apiKeyIn" type="password" placeholder="AIzaSy...">
   </label>
   <div class="wide" style="margin-top:10px">
     <button type="button" id="saveSettingsBtn">Enregistrer les réglages</button>
+    <p class="m" style="margin-top:8px">Obtenez une clé API gratuite sur <a href="https://aistudio.google.com/app/apikey" target="_blank" style="color:var(--tx)">Google AI Studio</a>.</p>
   </div>
 </section>
 
@@ -168,10 +169,7 @@ function getApiKey() { return localStorage.getItem(API_KEY_KEY) || ""; }
 async function callGemini(promptText, base64Image) {
   var key = getApiKey();
   if (!key) throw {code:"no_key", message: "Clé API Gemini manquante. Allez dans Réglages."};
-  
-  // URL mise à jour avec le bon modèle
   var url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=" + key;
-  
   var parts = [{text: promptText}];
   if (base64Image) {
     var mimeType = base64Image.split(";")[0].split(":")[1];
@@ -262,4 +260,118 @@ function render(){
     var eb=el("button","ghost","Estimer IA"); eb.type="button";
     eb.onclick = async function(){
       eb.disabled=true; eb.textContent="...";
-      try{var r=await estimate(c, c
+      try{var r=await estimate(c, c.photo); c.valeur=r.mid; c.est=true; c.estNote=r.min+"–"+r.max+" €"; persist(c);}
+      catch(e){toast(e.message||"Erreur"); eb.disabled=false; eb.textContent="Estimer IA";}
+    };
+    act.appendChild(eb);
+    
+    var del=el("button","ghost","Supprimer"), t; del.type="button";
+    del.onclick=function(){
+      if(del.dataset.arm){clearTimeout(t); removeCard(c.id);}
+      else{del.dataset.arm="1"; del.classList.add("danger");
+      t=setTimeout(function(){del.dataset.arm=""; del.classList.remove("danger");},3000);}
+    };
+    act.appendChild(del); b.appendChild(act); d.appendChild(b); g.appendChild(d);
+  });
+  
+  $("e").hidden = list.length>0;
+  $("e").textContent = cards.length ? "Aucun résultat." : "Aucune carte. Clique sur Ajouter.";
+  $("sN").textContent = cards.length;
+  $("sV").textContent = Math.round(total) + " €";
+  $("sC").textContent = names.length;
+}
+
+function formCard(){var F=$("f").elements;return {joueur:F.joueur.value.trim(),sport:F.sport.value,annee:parseInt(F.annee.value)||0,serie:F.serie.value.trim(),numero:F.numero.value.trim(),etat:F.etat.value,notes:F.notes.value.trim(),collection:F.collection.value.trim()};}
+async function doFormEst(){var r=await estimate(formCard(),photo); $("f").elements.valeur.value=r.mid; formEst=true; formNote=r.min+"–"+r.max+" € · "+r.note;}
+
+function addFromForm(){
+  var c=formCard(), F=$("f").elements;
+  c.id=Date.now(); c.valeur=parseFloat(F.valeur.value)||0; c.photo=photo;
+  if(formEst && c.valeur){c.est=true; c.estNote=formNote;}
+  persist(c);
+  var keep=c.collection; $("f").reset(); F.collection.value=keep;
+  photo=""; formEst=false; $("prev").hidden=true;
+  $("panel").hidden=true; render(); toast("Carte ajoutée !");
+}
+
+function shrink(file,max){return new Promise(function(res,rej){
+  var u=URL.createObjectURL(file), im=new Image();
+  im.onload=function(){
+    var k=Math.min(1,max/Math.max(im.width,im.height)), cv=document.createElement("canvas");
+    cv.width=Math.round(im.width*k); cv.height=Math.round(im.height*k);
+    cv.getContext("2d").drawImage(im,0,0,cv.width,cv.height); URL.revokeObjectURL(u);
+    res(cv.toDataURL("image/jpeg", 0.75));
+  };
+  im.onerror=function(){rej(new Error("Image invalide"));}; im.src=u;
+});}
+
+/* --- EVENT LISTENERS --- */
+$("addBtn").onclick=function(){$("panel").hidden=!$("panel").hidden; $("settingsPanel").hidden=true;};
+$("settingsBtn").onclick=function(){$("settingsPanel").hidden=!$("settingsPanel").hidden; $("panel").hidden=true; $("apiKeyIn").value = getApiKey();};
+$("scanBtn").onclick=function(){mode="scan"; $("scanIn").click();};
+$("photoBtn").onclick=function(){mode="photo"; $("scanIn").click();};
+$("lb").onclick=function(){$("lb").hidden=true;};
+$("f").addEventListener("submit",function(ev){ev.preventDefault(); addFromForm();});
+
+$("saveSettingsBtn").onclick=function(){
+  localStorage.setItem(API_KEY_KEY, $("apiKeyIn").value.trim());
+  toast("Réglages enregistrés."); $("settingsPanel").hidden=true;
+};
+$("exportBtn").onclick=function(){
+  var dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(cards));
+  var a = document.createElement("a"); a.href = dataStr; a.download = "collection_cartes.json"; a.click();
+};
+$("importBtn").onclick=function(){$("importIn").click();};
+$("importIn").addEventListener("change", function(e){
+  var file = e.target.files[0]; if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(evt) {
+    try {
+      var imported = JSON.parse(evt.target.result);
+      if(Array.isArray(imported)) { cards = imported; save(); render(); toast("Collection importée avec succès !"); $("settingsPanel").hidden = true; }
+    } catch(err) { toast("Fichier JSON invalide."); }
+  };
+  reader.readAsText(file); this.value="";
+});
+
+var PROMPT="Analyse cette carte de sport. Renvoie UNIQUEMENT un objet JSON avec ces clés exactes : joueur, sport (Football, Basket, Baseball, Hockey, Rugby, Tennis, Formule 1, Autre), annee (nombre), serie, numero, etat (Neuve, Excellent, Bon, Moyen, Abîmée), notes. Mets une chaîne vide si non lisible.";
+
+$("scanIn").addEventListener("change", async function(){
+  var file=this.files[0]; this.value=""; if(!file) return;
+  var msg=$("scanMsg"), bs=[$("scanBtn"),$("photoBtn"),$("estBtn")];
+  bs.forEach(function(b){b.disabled=true;});
+  try{
+    photo = await shrink(file, 800); $("prev").src=photo; $("prev").hidden=false;
+    if(mode==="photo"){msg.textContent="Photo ajoutée."; return;}
+    msg.textContent="Lecture IA en cours...";
+    
+    var out = await callGemini(PROMPT, photo);
+    var d = parseJ(out), F=$("f").elements;
+    F.joueur.value=d.joueur||""; F.annee.value=d.annee||""; F.serie.value=d.serie||"";
+    F.numero.value=d.numero||""; F.notes.value=d.notes||""; F.valeur.value=""; formEst=false;
+    if(d.sport) F.sport.value=d.sport; if(d.etat) F.etat.value=d.etat;
+    
+    if($("autoEst").checked && F.joueur.value){
+      msg.textContent="Estimation IA en cours...";
+      await doFormEst();
+    }
+    if($("autoAdd").checked && F.joueur.value) addFromForm();
+    else msg.textContent="Carte lue. Vérifiez et validez.";
+  }catch(e){msg.textContent=e.message||"Erreur de scan."; toast(e.message||"Erreur de scan.");}
+  finally{bs.forEach(function(b){b.disabled=false;});}
+});
+
+$("estBtn").onclick=async function(){
+  if(!formCard().joueur){toast("Joueur requis.");return;}
+  $("estBtn").disabled=true; $("scanMsg").textContent="Estimation...";
+  try{await doFormEst(); $("scanMsg").textContent="Valeur estimée.";}
+  catch(e){$("scanMsg").textContent=""; toast(e.message||"Erreur.");}
+  $("estBtn").disabled=false;
+};
+
+["q","fs","so"].forEach(function(i){$(i).addEventListener("input",render);});
+render();
+})();
+</script>
+</body>
+</html>
